@@ -8,6 +8,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.fasterxml.jackson.databind.type.ResolvedRecursiveType;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -28,43 +29,32 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private WPI_TalonSRX leftTalon1;
-  private WPI_TalonSRX leftTalon2;
 
   private WPI_TalonSRX rightTalon1;
-  private WPI_TalonSRX rightTalon2;
-
-  private SpeedControllerGroup leftMotors;
-  private SpeedControllerGroup rightMotors;
 
   private double leftInsanityFactor = 0.5;
   private double rightInsanityFactor = 0.5;
 
+  private boolean reverseLeft = false;
   private boolean insanityCheck = true;
 
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
+
   @Override
   public void robotInit() {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    leftTalon1 = new WPI_TalonSRX(1);
-    leftTalon2 = new WPI_TalonSRX(2);
+    leftTalon1 = new WPI_TalonSRX(4);
 
-    leftTalon1.setInverted(false);
-    leftTalon2.setInverted(false);
 
     rightTalon1 = new WPI_TalonSRX(3);
-    rightTalon2 = new WPI_TalonSRX(4);
 
-    rightTalon1.setInverted(true);
-    rightTalon2.setInverted(true);
-
-    leftMotors = new SpeedControllerGroup(leftTalon1, leftTalon2);
-    rightMotors = new SpeedControllerGroup(rightTalon1, rightTalon2);
+    SmartDashboard.putBoolean("reverseLeft", reverseLeft);
 
     SmartDashboard.putNumber("leftInsanityFactor", leftInsanityFactor);
     SmartDashboard.putNumber("rightInsanityFactor", rightInsanityFactor);
@@ -123,6 +113,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    reverseLeft = SmartDashboard.getBoolean("reverseLeft", reverseLeft);
     insanityCheck = SmartDashboard.getBoolean("insanityCheck", insanityCheck);
     if (!insanityCheck) {
       leftInsanityFactor = SmartDashboard.getNumber("leftInsanityFactor", leftInsanityFactor);
@@ -140,8 +131,15 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("rightInsanityFactor", rightInsanityFactor);
     }
 
-    leftMotors.set(leftInsanityFactor);
-    rightMotors.set(rightInsanityFactor);
+
+    if (reverseLeft) {
+      leftTalon1.setInverted(true);
+    } else {
+      leftTalon1.setInverted(false);
+    }
+
+    leftTalon1.set(leftInsanityFactor);
+    rightTalon1.set(rightInsanityFactor);
   }
 
   /**
@@ -149,5 +147,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+    leftTalon1.set(0.25);
+    rightTalon1.set(0.25);
   }
 }
