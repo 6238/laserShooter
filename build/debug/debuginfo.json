@@ -1,12 +1,5 @@
 [
   {
-    "artifact": "frcJava (in project laserShooter2)",
-    "target": "roborio",
-    "debugfile": "frcJava_roborio.debugconfig",
-    "project": "laserShooter2",
-    "language": "java"
-  },
-  {
     "artifact": "frcJava (in project laserShooter)",
     "target": "roborio",
     "debugfile": "frcJava_roborio.debugconfig",

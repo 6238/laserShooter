@@ -8,9 +8,11 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.fasterxml.jackson.databind.type.ResolvedRecursiveType;
 
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+// import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,11 +34,18 @@ public class Robot extends TimedRobot {
 
   private WPI_TalonSRX rightTalon1;
 
+  private PowerDistributionPanel pdp;
+
   private double leftInsanityFactor = 0.5;
   private double rightInsanityFactor = 0.5;
 
   private boolean reverseLeft = false;
   private boolean insanityCheck = true;
+
+  private AddressableLED m_led;
+  private AddressableLEDBuffer m_ledBuffer;
+
+  // private Encoder encoder;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -51,8 +60,9 @@ public class Robot extends TimedRobot {
 
     leftTalon1 = new WPI_TalonSRX(4);
 
-
     rightTalon1 = new WPI_TalonSRX(3);
+
+    pdp = new PowerDistributionPanel();
 
     SmartDashboard.putBoolean("reverseLeft", reverseLeft);
 
@@ -60,6 +70,20 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("rightInsanityFactor", rightInsanityFactor);
 
     SmartDashboard.putBoolean("insanityCheck", insanityCheck);
+
+    // PWM port 9
+    // Must be a PWM header, not MXP or DIO
+    m_led = new AddressableLED(9);
+
+    // Reuse buffer
+    // Default to a length of 60, start empty output
+    // Length is expensive to set, so only set it once, then just update data
+    m_ledBuffer = new AddressableLEDBuffer(93);
+    m_led.setLength(m_ledBuffer.getLength());
+
+    // Set the data
+    m_led.setData(m_ledBuffer);
+    m_led.start();
   }
 
   /**
@@ -138,8 +162,15 @@ public class Robot extends TimedRobot {
       leftTalon1.setInverted(false);
     }
 
-    leftTalon1.set(leftInsanityFactor);
-    rightTalon1.set(rightInsanityFactor);
+    leftTalon1.set(-leftInsanityFactor);
+    rightTalon1.set(-rightInsanityFactor);
+
+    for (var i = 0; i < m_ledBuffer.getLength(); i++) {
+      // Sets the specified LED to the RGB values for red
+      m_ledBuffer.setRGB(i, 0, 255, 0);
+   }
+   
+   m_led.setData(m_ledBuffer);
   }
 
   /**
@@ -147,6 +178,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+    pdp.clearStickyFaults();
+
     leftTalon1.set(0.25);
     rightTalon1.set(0.25);
   }
